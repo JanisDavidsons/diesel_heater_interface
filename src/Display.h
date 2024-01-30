@@ -1,6 +1,7 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
+#include <SD.h>
 #include <Arduino.h>
 #include <TouchScreen.h>
 #include <MCUFRIEND_kbv.h>
@@ -8,6 +9,9 @@
 #include <Fonts/FreeSerifBoldItalic9pt7b.h>
 
 #include "CanBusReceiver.h"
+
+#define SD_CS 10     // SD card pin on your shield
+#define BUFFPIXEL 20 //Drawing speed, 20 is meant to be the best but you can use 60 altough it takes a lot of uno's RAM         
 
 #define MINPRESSURE 200
 #define MAXPRESSURE 1000
@@ -63,6 +67,8 @@ private:
   char on[4] = "ON";
   char off[5] = "OFF";
 
+  const char* filename = "logo.bmp";
+
   void drawScale_1();
   void drawScale_2();
   void drawScale_3();
@@ -75,6 +81,7 @@ private:
 
 public:
   Display(MCUFRIEND_kbv &tft, TouchScreen &ts);
+  void initilize();
   void page_0(void);
   void page_1(CanBusReceiver &data);
   void page_2(void);
@@ -88,6 +95,10 @@ public:
   Adafruit_GFX_Button getBackBtn();
   Adafruit_GFX_Button getPumpBtn();
   uint8_t getCurrentPage();
+  void bmpDraw(const char *filename, int x, int y);
+  uint16_t read16(File f);
+  uint32_t read32(File f);
+  void initilizeSD();
 };
 
 #endif

@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
+#include <SD.h>
 #include <time.h>
 #include <TouchScreen.h>
 #include <MCUFRIEND_kbv.h>
@@ -38,14 +39,9 @@ void setup()
     mcp2515.setBitrate(CAN_125KBPS);
     mcp2515.setNormalMode();
 
-    uint16_t ID = tft.readID();
-
-    tft.begin(ID);
-    tft.setRotation(1); // landscape
-    tft.fillScreen(BLACK);
-    tft.cp437(true);
-
+    display.initilize();
     display.page_0();
+
     runTimeCallback();
 }
 
