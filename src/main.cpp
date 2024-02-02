@@ -38,9 +38,13 @@ void setup()
     mcp2515.reset();
     mcp2515.setBitrate(CAN_125KBPS);
     mcp2515.setNormalMode();
-
     display.initilize();
+    pinMode(SD_CS, OUTPUT);
+    digitalWrite(SD_CS, HIGH);
+
+    // delay(2000);
     display.page_0();
+    // display.page_1(canbus);
 
     runTimeCallback();
 }
@@ -49,7 +53,7 @@ void loop()
 {
     timer.tick();
     canbus.checkMessage();
-    display.update_button_list();
+    display.updateButtonList();
     uint8_t currentPage = display.getCurrentPage();
 
     if (currentPage == 0)
@@ -61,7 +65,10 @@ void loop()
     }
     else if (currentPage == 1)
     {
-        display.draw_water_temp(canbus);
+        display.drawCoolantTemp(canbus);
+        display.drawExhaustTemp(canbus);
+        display.drawHeaterState(canbus.getHeateState().state);
+        display.drawHeaterMode(canbus.getHeateState().mode);
 
         if (display.getBackBtn().justPressed())
         {
@@ -78,10 +85,9 @@ void loop()
         {
             display.page_1(canbus);
         }
-        else if (display.getPumpBtn().justPressed())
+        else if (display.getGridBtn().justPressed())
         {
-            display.draw_output_state(1);
-            water_pump_state = !water_pump_state;
+            display.drawOutputState(1);
         }
         else if (display.getNextBtn().justPressed())
         {
@@ -101,6 +107,7 @@ void runTimeCallback()
 
             // Serial.print("Room temperature: ");
             // Serial.println(temperature.readTemperature());
+            canbus.tick();
             return true;
         });
 

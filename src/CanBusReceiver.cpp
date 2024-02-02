@@ -50,10 +50,15 @@ void CanBusReceiver::processFrameFlameSensor(frameFlameSensor &flameData)
   flameData.isDecreasing = static_cast<bool>(flameData.data[3]);
 
   setTrend(flameData);
+  flameData.lastUpdated = seconds;
+  flameData.isOutdated = false;
 }
 
 void CanBusReceiver::processFrameHeaterState(frameHeaterState &stateData)
 {
+  stateData.prevState = stateData.state;
+  stateData.prevMode = stateData.mode;
+
   stateData.state = stateData.data[0];
   stateData.mode  = stateData.data[1];
 }
@@ -74,6 +79,8 @@ void CanBusReceiver::processFrameHeaterTemperature(frameTemperature &tempData)
 
   tempData.coolant = static_cast<double>(reconstructedCoolantTmp) / 10;
   tempData.surface = static_cast<double>(reconstructedSurfaceTmp) / 10;
+  tempData.lastUpdated = seconds;
+  tempData.isOutdated = false;
 }
 
 void CanBusReceiver::checkMessage()
@@ -211,4 +218,39 @@ double CanBusReceiver::getPrevCoolantTmp()
 double CanBusReceiver::getPrevSurfaceTmp()
 {
   return heaterTemperature.prevSurface;
+}
+
+void CanBusReceiver::tick()
+{
+  seconds++;
+
+  if (seconds - heaterTemperature.lastUpdated > 5)
+  {
+    heaterTemperature.isOutdated = true;
+    heaterTemperature.coolant = -10.0;
+    heaterTemperature.surface = -10.0;
+  }
+
+  if (seconds - exhaustTemperature.lastUpdated > 5)
+  {
+    exhaustTemperature.isOutdated = true;
+    exhaustTemperature.value = 0.0;
+  }
+  
+  
+}
+
+CanBusReceiver::frameTemperature CanBusReceiver::getHeaterTemp()
+{
+  return heaterTemperature;
+}
+
+CanBusReceiver::frameFlameSensor CanBusReceiver::getExhaustTemp()
+{
+  return exhaustTemperature;
+}
+
+CanBusReceiver::frameHeaterState CanBusReceiver::getHeateState()
+{
+  return heaterState;
 }

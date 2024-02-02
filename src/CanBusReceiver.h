@@ -17,6 +17,7 @@ public:
 private:
   MCP2515 &mcp2515;
   unsigned long lastMessageTime = 0;
+  uint8_t seconds = 0;
 
   struct can_frame canMsg;
 
@@ -30,6 +31,8 @@ private:
     double value = 0.0;
     bool isIncreasing = false;
     bool isDecreasing = false;
+    uint8_t lastUpdated = 0;
+    bool isOutdated = true;
   } exhaustTemperature;
 
   struct frameVoltageSensor
@@ -46,7 +49,9 @@ private:
     uint8_t can_dlc;
     uint8_t data[2];
     uint8_t state = 0;
+    uint8_t prevState = 0;
     uint8_t mode = 0;
+    uint8_t prevMode = 0;
   } heaterState;
 
   struct frameTemperature
@@ -54,10 +59,12 @@ private:
     uint32_t can_id;
     uint8_t can_dlc;
     uint8_t data[4];
-    double coolant = 0.0;
-    double prevCoolant = 0.0;
-    double surface = 0.0;
-    double prevSurface = 0.0;
+    double coolant = -10.0;
+    double prevCoolant = -10.0;
+    double surface = -10.0;
+    double prevSurface = -10.0;
+    uint8_t lastUpdated = 0;
+    bool isOutdated = true;
   } heaterTemperature;
 
   void setTrend(frameFlameSensor &sensor);
@@ -83,6 +90,10 @@ public:
   double getPrevSurfaceTmp();
   double getSurfaceTmp();
 
+  frameTemperature getHeaterTemp();
+  frameFlameSensor getExhaustTemp();
+  frameHeaterState getHeateState();
+
   template <typename T>
   void copyCanMsgToStruct(const struct can_frame &canMsg, T &frame);
 
@@ -90,6 +101,7 @@ public:
   void processFrameFlameSensor(frameFlameSensor &flameData);
   void processFrameHeaterState(frameHeaterState &stateData);
   void processFrameHeaterTemperature(frameTemperature &temperatureData);
+  void tick();
 };
 
 #endif
