@@ -59,8 +59,8 @@ private:
   uint8_t dotDistance = 10;
   double coolantTempDisplayed = 0.0;
   double exhaustTempDisplayed = 0.0;
-  uint8_t heaterStateDisplayed = 0;
-  uint8_t heaterModeDisplayed = 0;
+  int8_t heaterStateDisplayed = 0;
+  int8_t heaterModeDisplayed = 0;
 
   int pixel_x, pixel_y;
   bool itemOneOn = false;
@@ -82,7 +82,7 @@ private:
       "Off",
       "Sleep",
       "Start up sequence",
-      "Running",
+      "Active",
       "Shutting down",
       "Restarting"};
 
@@ -93,7 +93,7 @@ private:
       "Venting",
       "Priming",
       "Igniting",
-      "Active",
+      "Monitoring flame",
       "Idle",
       "Eco",
       "Cooling < 150",
@@ -134,8 +134,8 @@ public:
   void drawCoolantTemp(CanBusReceiver &data);
   void drawExhaustTemp(CanBusReceiver &data);
   void drawPixelDots(uint8_t dotDistance);
-  void drawHeaterState(uint8_t state);
-  void drawHeaterMode(uint8_t mode);
+  void drawHeaterState(CanBusReceiver &data);
+  void drawHeaterMode(CanBusReceiver &data);
 };
 
 #endif

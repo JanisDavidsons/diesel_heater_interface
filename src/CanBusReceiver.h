@@ -48,10 +48,11 @@ private:
     uint32_t can_id;
     uint8_t can_dlc;
     uint8_t data[2];
-    uint8_t state = 0;
-    uint8_t prevState = 0;
-    uint8_t mode = 0;
-    uint8_t prevMode = 0;
+    int8_t state = -1;
+    int8_t prevState = -1;
+    int8_t mode = -1;
+    int8_t prevMode = -1;
+    uint8_t lastUpdated = 0;
   } heaterState;
 
   struct frameTemperature

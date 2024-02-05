@@ -61,6 +61,7 @@ void CanBusReceiver::processFrameHeaterState(frameHeaterState &stateData)
 
   stateData.state = stateData.data[0];
   stateData.mode  = stateData.data[1];
+  stateData.lastUpdated = seconds;
 }
 
 void CanBusReceiver::processFrameHeaterTemperature(frameTemperature &tempData)
@@ -237,7 +238,11 @@ void CanBusReceiver::tick()
     exhaustTemperature.value = 0.0;
   }
   
-  
+  if (seconds - heaterState.lastUpdated > 5)
+  {
+    heaterState.state = -1;
+    heaterState.mode = -1;
+  }
 }
 
 CanBusReceiver::frameTemperature CanBusReceiver::getHeaterTemp()

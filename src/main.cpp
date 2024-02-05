@@ -67,8 +67,8 @@ void loop()
     {
         display.drawCoolantTemp(canbus);
         display.drawExhaustTemp(canbus);
-        display.drawHeaterState(canbus.getHeateState().state);
-        display.drawHeaterMode(canbus.getHeateState().mode);
+        display.drawHeaterState(canbus);
+        display.drawHeaterMode(canbus);
 
         if (display.getBackBtn().justPressed())
         {

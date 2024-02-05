@@ -165,8 +165,8 @@ void Display::page_1(CanBusReceiver &data)
     drawScaleCoolant();
     drawCoolantTemp(data);
     drawExhaustTemp(data);
-    drawHeaterState(data.getHeateState().state);
-    drawHeaterMode(data.getHeateState().mode);
+    drawHeaterState(data);
+    drawHeaterMode(data);
     drawPixelDots(dotDistance);
     initalPageRender = false;
 }
@@ -217,7 +217,6 @@ void Display::drawExhaustTemp(CanBusReceiver &data)
     }
 
     exhaustTempDisplayed = exhaustTmp;
-    // drawPixelDots(dotDistance);
 }
 
 void Display::drawCoolantTemp(CanBusReceiver &data)
@@ -672,29 +671,32 @@ void Display::drawPixelDots(uint8_t dotDistance)
     }
 }
 
-void Display::drawHeaterState(uint8_t state)
+void Display::drawHeaterState(CanBusReceiver &data)
 {
+    int8_t state = data.getHeateState().state;
 
     if (state == heaterStateDisplayed && !initalPageRender)
     {
         return;
     }
-    tft.fillRect(81, 201, 238, 19, TEXT_BACKGROUND);
+    tft.fillRect(81, 201, 238, 19, state == -1 ? BLACK : TEXT_BACKGROUND);
     tft.drawRect(80, 200, 240, 21, WHITE);
 
-    showmsgXY(85, 214, 0, &FreeMonoBold9pt7b, YELLOW, stateTitleMap[state]);
+    state == -1 ? showmsgXY(85, 214, 0, &FreeMonoBold9pt7b, RED, "CAN-BUS failed.") : showmsgXY(85, 214, 0, &FreeMonoBold9pt7b, YELLOW, stateTitleMap[state]);
     heaterStateDisplayed = state;
 }
 
-void Display::drawHeaterMode(uint8_t mode)
+void Display::drawHeaterMode(CanBusReceiver &data)
 {
+    int8_t mode = data.getHeateState().mode;
+
     if (mode == heaterModeDisplayed && !initalPageRender)
     {
         return;
     }
-    tft.fillRect(81, 221, 238, 18, TEXT_BACKGROUND);
+    tft.fillRect(81, 221, 238, 18, mode == -1 ? BLACK : TEXT_BACKGROUND);
     tft.drawRect(80, 220, 240, 20, WHITE);
 
-    showmsgXY(85, 234, 0, &FreeMonoBold9pt7b, YELLOW, operationMap[mode]);
+    mode == -1 ? showmsgXY(85, 234, 0, &FreeMonoBold9pt7b, RED, "No message received.") : showmsgXY(85, 234, 0, &FreeMonoBold9pt7b, YELLOW, operationMap[mode]);
     heaterModeDisplayed = mode;
 }
