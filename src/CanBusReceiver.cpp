@@ -25,13 +25,14 @@ void CanBusReceiver::processFrameVoltageSensor(frameVoltageSensor &voltageData)
       (static_cast<uint8_t>(voltageData.data[0])) |
       (static_cast<uint8_t>(voltageData.data[1]) << 8);
 
-  double newVoltage = static_cast<double>(reconstructedValue) / 100;
+  double newVoltage = static_cast<double>(reconstructedValue) / 10;
 
   if (newVoltage != voltageData.voltage)
   {
     voltageData.voltage = newVoltage;
-    voltageChanged = true;
-    lastMessageTime = millis();
+    voltageData.changed = true;
+    voltageData.isOutdated = false;
+    voltageData.lastUpdated = millis();
   }
 }
 
@@ -82,6 +83,20 @@ void CanBusReceiver::processFrameHeaterTemperature(frameTemperature &tempData)
   tempData.surface = static_cast<double>(reconstructedSurfaceTmp) / 10;
   tempData.lastUpdated = seconds;
   tempData.isOutdated = false;
+}
+
+void CanBusReceiver::processFrameInjectionPump(frameInjectionPump &injectionPumpData)
+{
+
+  injectionPumpData.prevFrequency = injectionPumpData.frequency;
+
+  int16_t reconstructedData =
+      (injectionPumpData.data[0]) |
+      (injectionPumpData.data[1] << 8);
+
+  injectionPumpData.frequency = static_cast<double>(reconstructedData) / 10;
+  injectionPumpData.lastUpdated = seconds;
+  injectionPumpData.isOutdated = false;
 }
 
 void CanBusReceiver::checkMessage()
@@ -136,13 +151,19 @@ void CanBusReceiver::checkMessage()
         Serial.println("Error: Size mismatch in received 0x103 message");
       }
     }
-    lastMessageTime = millis();
+    else if (canMsg.can_id == 0x104)
+    {
+      if (canMsg.can_dlc == sizeof(injectionPump.data))
+      {
+        copyCanMsgToStruct(canMsg, injectionPump);
+        processFrameInjectionPump(injectionPump);
+      }
+      else
+      {
+        Serial.println("Error: Size mismatch in received 0x104 message");
+      }
+    }
   }
-}
-
-unsigned long CanBusReceiver::getLatMessageTime()
-{
-  return lastMessageTime;
 }
 
 double CanBusReceiver::getExhaustTemp() const
@@ -163,11 +184,6 @@ bool CanBusReceiver::isExhaustTempIncreasing()
 bool CanBusReceiver::isExhaustTempDecreasing()
 {
   return exhaustTemperature.isDecreasing;
-}
-
-double CanBusReceiver::getVoltage() const
-{
-  return voltageSensor.voltage;
 }
 
 void CanBusReceiver::setTrend(frameFlameSensor &sensor)
@@ -243,6 +259,14 @@ void CanBusReceiver::tick()
     heaterState.state = -1;
     heaterState.mode = -1;
   }
+
+  if (seconds - voltageSensor.lastUpdated > 10)
+  {
+    Serial.println("Seting Voltage data outdated.");
+    voltageSensor.voltage = 9.0;
+    voltageSensor.isOutdated = true;
+  }
+  
 }
 
 CanBusReceiver::frameTemperature CanBusReceiver::getHeaterTemp()
@@ -258,4 +282,9 @@ CanBusReceiver::frameFlameSensor CanBusReceiver::getExhaustTemp()
 CanBusReceiver::frameHeaterState CanBusReceiver::getHeateState()
 {
   return heaterState;
+}
+
+CanBusReceiver::frameVoltageSensor CanBusReceiver::getVoltage()
+{
+  return voltageSensor;
 }

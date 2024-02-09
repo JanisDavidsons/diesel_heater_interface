@@ -43,8 +43,8 @@ void setup()
     digitalWrite(SD_CS, HIGH);
 
     // delay(2000);
-    display.page_0();
-    // display.page_1(canbus);
+    // display.page_0();
+    display.page_1(canbus);
 
     runTimeCallback();
 }
@@ -65,6 +65,8 @@ void loop()
     }
     else if (currentPage == 1)
     {
+        display.drawFuelLevel(canbus);
+        display.drawVoltage(canbus);
         display.drawCoolantTemp(canbus);
         display.drawExhaustTemp(canbus);
         display.drawHeaterState(canbus);

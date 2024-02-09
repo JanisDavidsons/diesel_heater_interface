@@ -57,10 +57,12 @@ private:
 
   uint8_t newPercent, lastPercent, currentpage, prevPage = 0;
   uint8_t dotDistance = 10;
-  double coolantTempDisplayed = 0.0;
-  double exhaustTempDisplayed = 0.0;
   int8_t heaterStateDisplayed = 0;
   int8_t heaterModeDisplayed = 0;
+  int8_t fuelLevelDisplayed = 0;
+  double coolantTempDisplayed = 0.0;
+  double exhaustTempDisplayed = 0.0;
+  double voltageDisplayed = 9.0;
 
   int pixel_x, pixel_y;
   bool itemOneOn = false;
@@ -102,8 +104,8 @@ private:
 
   const char *filename = "logoV2.bmp";
 
-  void drawScale_1();
-  void drawScale_2();
+  void drawScaleFuelLevel();
+  void drawScaleVoltage();
   void drawScaleExhaust();
   void drawScaleCoolant();
   bool TouchGetXY(void);
@@ -131,11 +133,14 @@ public:
   uint16_t read16(File f);
   uint32_t read32(File f);
   void initilizeSD();
-  void drawCoolantTemp(CanBusReceiver &data);
+  void drawFuelLevel(CanBusReceiver &data);
+  void drawVoltage(CanBusReceiver &data);
   void drawExhaustTemp(CanBusReceiver &data);
+  void drawCoolantTemp(CanBusReceiver &data);
   void drawPixelDots(uint8_t dotDistance);
   void drawHeaterState(CanBusReceiver &data);
   void drawHeaterMode(CanBusReceiver &data);
+  void drawHeateStats(CanBusReceiver &data);
 };
 
 #endif
