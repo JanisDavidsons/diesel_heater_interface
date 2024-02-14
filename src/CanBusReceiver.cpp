@@ -38,17 +38,9 @@ void CanBusReceiver::processFrameVoltageSensor(frameVoltageSensor &voltageData)
 
 void CanBusReceiver::processFrameFlameSensor(frameFlameSensor &flameData)
 {
-  int16_t reconstructedTemperature =
-      (flameData.data[0]) |
-      (flameData.data[1] << 8);
-
-  double newTemperature = round(static_cast<double>(reconstructedTemperature) / 10);
-
-  // tempData.surface = round(static_cast<double>(reconstructedSurfaceTmp) / 10);
-
-  flameData.value = newTemperature;
-  flameData.isIncreasing = static_cast<bool>(flameData.data[2]);
-  flameData.isDecreasing = static_cast<bool>(flameData.data[3]);
+  flameData.value = flameData.data[0];
+  flameData.isIncreasing = static_cast<bool>(flameData.data[1]);
+  flameData.isDecreasing = static_cast<bool>(flameData.data[2]);
 
   setTrend(flameData);
   flameData.lastUpdated = seconds;
@@ -61,13 +53,12 @@ void CanBusReceiver::processFrameHeaterState(frameHeaterState &stateData)
   stateData.prevMode = stateData.mode;
 
   stateData.state = stateData.data[0];
-  stateData.mode  = stateData.data[1];
+  stateData.mode = stateData.data[1];
   stateData.lastUpdated = seconds;
 }
 
 void CanBusReceiver::processFrameHeaterTemperature(frameTemperature &tempData)
 {
-
   tempData.prevCoolant = tempData.coolant;
   tempData.prevSurface = tempData.surface;
 
@@ -84,6 +75,7 @@ void CanBusReceiver::processFrameHeaterTemperature(frameTemperature &tempData)
   tempData.lastUpdated = seconds;
   tempData.isOutdated = false;
 }
+
 
 void CanBusReceiver::processFrameInjectionPump(frameInjectionPump &injectionPumpData)
 {
@@ -121,6 +113,8 @@ void CanBusReceiver::checkMessage()
       {
         copyCanMsgToStruct(canMsg, voltageSensor);
         processFrameVoltageSensor(voltageSensor);
+        Serial.print("Setting Voltage ");
+        Serial.println(seconds);
       }
       else
       {
@@ -253,7 +247,7 @@ void CanBusReceiver::tick()
     exhaustTemperature.isOutdated = true;
     exhaustTemperature.value = 0.0;
   }
-  
+
   if (seconds - heaterState.lastUpdated > 5)
   {
     heaterState.state = -1;
@@ -262,9 +256,15 @@ void CanBusReceiver::tick()
 
   if (seconds - voltageSensor.lastUpdated > 10)
   {
-    Serial.println("Seting Voltage data outdated.");
+    Serial.println("Setting voltage outdated");
     voltageSensor.voltage = 9.0;
     voltageSensor.isOutdated = true;
+  }
+
+  if (seconds - injectionPump.lastUpdated >5)
+  {
+    injectionPump.frequency = -1.0;
+    injectionPump.isOutdated = true;
   }
   
 }
@@ -287,4 +287,9 @@ CanBusReceiver::frameHeaterState CanBusReceiver::getHeateState()
 CanBusReceiver::frameVoltageSensor CanBusReceiver::getVoltage()
 {
   return voltageSensor;
+}
+
+CanBusReceiver::frameInjectionPump CanBusReceiver::getInjectionPump()
+{
+  return injectionPump;
 }

@@ -48,10 +48,14 @@ void Display::drawScaleFuelLevel()
 
     tft.setTextColor(WHITE);
 
-    showmsgXY(5, 30, 1, &FreeSerifBoldItalic9pt7b, WHITE, "100");
-    showmsgXY(15, 100, 1, &FreeSerifBoldItalic9pt7b, WHITE, "50");
-    showmsgXY(25, 170, 1, &FreeSerifBoldItalic9pt7b, WHITE, "0");
-    showmsgXY(30, 15, 1, &FreeSmallFont, YELLOW, "FUEL");
+    setTextContext(5, 30, 1, &FreeSerifBoldItalic9pt7b, WHITE);
+    tft.print("100");
+    setTextContext(15, 100, 1, &FreeSerifBoldItalic9pt7b, WHITE);
+    tft.print("50");
+    setTextContext(25, 170, 1, &FreeSerifBoldItalic9pt7b, WHITE);
+    tft.print("0");
+    setTextContext(30, 15, 1, &FreeSmallFont, YELLOW);
+    tft.print("FUEL");
 }
 
 void Display::drawScaleVoltage()
@@ -66,10 +70,14 @@ void Display::drawScaleVoltage()
 
     tft.setTextColor(WHITE);
 
-    showmsgXY(90, 30, 1, &FreeSerifBoldItalic9pt7b, WHITE, "15");
-    showmsgXY(90, 100, 1, &FreeSerifBoldItalic9pt7b, WHITE, "12");
-    showmsgXY(100, 170, 1, &FreeSerifBoldItalic9pt7b, WHITE, "9");
-    showmsgXY(90, 15, 1, &FreeSmallFont, YELLOW, "VOLTAGE");
+    setTextContext(90, 30, 1, &FreeSerifBoldItalic9pt7b, WHITE);
+    tft.print("15");
+    setTextContext(90, 100, 1, &FreeSerifBoldItalic9pt7b, WHITE);
+    tft.print("12");
+    setTextContext(100, 170, 1, &FreeSerifBoldItalic9pt7b, WHITE);
+    tft.print("9");
+    setTextContext(90, 15, 1, &FreeSmallFont, YELLOW);
+    tft.print("VOLTAGE");
 }
 
 void Display::drawScaleExhaust()
@@ -84,10 +92,14 @@ void Display::drawScaleExhaust()
 
     tft.setTextColor(WHITE);
 
-    showmsgXY(153, 30, 1, &FreeSerifBoldItalic9pt7b, WHITE, "200");
-    showmsgXY(156, 100, 1, &FreeSerifBoldItalic9pt7b, WHITE, "100");
-    showmsgXY(175, 170, 1, &FreeSerifBoldItalic9pt7b, WHITE, "0");
-    showmsgXY(170, 15, 1, &FreeSmallFont, YELLOW, "EHAUST");
+    setTextContext(153, 30, 1, &FreeSerifBoldItalic9pt7b, WHITE);
+    tft.print("200");
+    setTextContext(156, 100, 1, &FreeSerifBoldItalic9pt7b, WHITE);
+    tft.print("100");
+    setTextContext(175, 170, 1, &FreeSerifBoldItalic9pt7b, WHITE);
+    tft.print("0");
+    setTextContext(170, 15, 1, &FreeSmallFont, YELLOW);
+    tft.print("EHAUST");
 }
 
 void Display::drawScaleCoolant()
@@ -102,21 +114,25 @@ void Display::drawScaleCoolant()
 
     tft.setTextColor(WHITE);
 
-    showmsgXY(230, 30, 1, &FreeSerifBoldItalic9pt7b, WHITE, "100");
-    showmsgXY(239, 100, 1, &FreeSerifBoldItalic9pt7b, WHITE, "40");
-    showmsgXY(235, 170, 1, &FreeSerifBoldItalic9pt7b, WHITE, "-10");
-    showmsgXY(240, 15, 1, &FreeSmallFont, YELLOW, "COOLANT");
+    setTextContext(230, 30, 1, &FreeSerifBoldItalic9pt7b, WHITE);
+    tft.print("100");
+    setTextContext(239, 100, 1, &FreeSerifBoldItalic9pt7b, WHITE);
+    tft.print("40");
+    setTextContext(235, 170, 1, &FreeSerifBoldItalic9pt7b, WHITE);
+    tft.print("-10");
+    setTextContext(240, 15, 1, &FreeSmallFont, YELLOW);
+    tft.print("COOLANT");
 }
 
-void Display::showmsgXY(int x, int y, int sz, const GFXfont *f, int color,
-                        const char *msg)
+void Display::printDouble(const double number)
 {
-    tft.setFont(f);
-    tft.setCursor(x, y);
-    tft.setTextColor(color);
-    tft.setTextSize(sz);
-    tft.print(msg);
-    tft.setFont(NULL);
+    int intValue = (int)(number * 10); // Multiply by 10 to keep one decimal place
+    int wholePart = intValue / 10;
+    int decimalPart = intValue % 10;
+
+    tft.print(wholePart);
+    tft.print('.');
+    tft.print(decimalPart);
 }
 
 bool Display::TouchGetXY(void)
@@ -129,8 +145,8 @@ bool Display::TouchGetXY(void)
     bool pressed = (p.z > MINPRESSURE && p.z < MAXPRESSURE);
     if (pressed)
     {
-        pixel_x = map(p.y, TS_LEFT, TS_RT, 0, 400); // changed to portrait
-        pixel_y = map(p.x, TS_TOP, TS_BOT, 0, 240); // changed to portrait
+        pixel_x = map(p.x, TS_LEFT, TS_RT, 0, tft.width());
+        pixel_y = map(p.y, TS_TOP, TS_BOT, 0, tft.height());
         if (SHOW_COORDINATES_ON)
         {
             Serial.print("X = ");
@@ -175,9 +191,10 @@ void Display::page_1(CanBusReceiver &data)
     drawExhaustTemp(data);
     drawHeaterState(data);
     drawHeaterMode(data);
-    drawHeateStats(data);
+    drawHeaterStats(data);
     drawPixelDots(dotDistance);
     initalPageRender = false;
+    tft.setFont(NULL);
 }
 
 void Display::page_2(void)
@@ -221,9 +238,19 @@ void Display::drawFuelLevel(CanBusReceiver &data)
 
     tft.fillRect(0, 175, 70, 20, BLACK);
 
-    isOutdated ? showmsgXY(30, 200, 1, &FreeBigFont, RED, "--") : printInteger((isTwoDigits ? 30 : 20), 190, 1, &FreeSerifBoldItalic9pt7b, GREEN, fuelLevel);
+    if (isOutdated)
+    {
+        setTextContext(30, 190, 1, &FreeBigFont, RED);
+        tft.print("__");
+    }
+    else
+    {
+        setTextContext((isTwoDigits ? 30 : 20), 190, 1, &FreeSerifBoldItalic9pt7b, GREEN);
+        tft.print(fuelLevel);
+    }
 
-    showmsgXY(50, 190, 1, &FreeSerifBoldItalic9pt7b, GREEN, "%");
+    setTextContext(&FreeSerifBoldItalic9pt7b, GREEN);
+    tft.print("%");
 
     fuelLevelDisplayed = fuelLevel;
 }
@@ -244,8 +271,6 @@ void Display::drawVoltage(CanBusReceiver &data)
         return;
     }
 
-    Serial.println(isOutdated);
-
     if (voltage >= 9.00) // so that we do not draw status bar below the lowest position
     {
         // Scale the voltage to fit within the range [9.00, 15.00] volts
@@ -262,11 +287,21 @@ void Display::drawVoltage(CanBusReceiver &data)
         }
     }
 
-    tft.fillRect(90, 175, 40, 20, BLACK);
+    tft.fillRect(95, 175, 40, 20, BLACK);
 
-    isOutdated ? showmsgXY(95, 200, 1, &FreeBigFont, RED, "--") : printDouble((isSingleDigit ? 105 : 95), 190, 1, &FreeSerifBoldItalic9pt7b, GREEN, voltage);
+    if (isOutdated)
+    {
+        setTextContext(100, 190, 1, &FreeBigFont, RED);
+        tft.print("__");
+    }
+    else
+    {
+        setTextContext((isSingleDigit ? 110 : 100), 190, 1, &FreeSerifBoldItalic9pt7b, GREEN);
+        printDouble(voltage);
+    }
 
-    showmsgXY(130, 190, 1, &FreeSerifBoldItalic9pt7b, GREEN, "V");
+    setTextContext(&FreeSerifBoldItalic9pt7b, GREEN);
+    tft.print("V");
 
     voltageDisplayed = voltage;
 }
@@ -274,9 +309,7 @@ void Display::drawVoltage(CanBusReceiver &data)
 void Display::drawExhaustTemp(CanBusReceiver &data)
 {
     bool isOutdated = data.getExhaustTemp().isOutdated;
-    bool isTwoDigits = data.getExhaustTemp().value < 100;
-
-    double exhaustTmp = data.getExhaustTemp().value;
+    uint8_t exhaustTmp = data.getExhaustTemp().value;
 
     if (exhaustTmp == exhaustTempDisplayed && !initalPageRender)
     {
@@ -294,11 +327,33 @@ void Display::drawExhaustTemp(CanBusReceiver &data)
         tft.fillRect(200, 170 - new_temp, 20, new_temp - ((initalPageRender || isOutdated) ? 0 : last_temp), GREEN);
     }
 
-    tft.fillRect(170, 175, 30, 20, BLACK);
+    tft.fillRect(165, 175, 35, 20, BLACK);
 
-    isOutdated ? showmsgXY(170, 200, 1, &FreeBigFont, RED, "--") : printInteger((isTwoDigits ? 180 : 170), 190, 1, &FreeSerifBoldItalic9pt7b, GREEN, exhaustTmp);
+    if (isOutdated)
+    {
+        setTextContext(165, 190, 1, &FreeBigFont, RED);
+        tft.print("__");
+    }
+    else
+    {
+        uint8_t xPos = 188;
+        switch (data.getExhaustTemp().value)
+        {
+        case 10 ... 99:
+            xPos = 179;
+            break;
+        case 100 ... 255:
+            xPos = 170;
+            break;
+        default:
+            break;
+        }
+        setTextContext(xPos, 190, 1, &FreeSerifBoldItalic9pt7b, GREEN);
+        tft.print(exhaustTmp);
+    }
 
-    showmsgXY(200, 190, 1, &FreeSerifBoldItalic9pt7b, GREEN, "*C");
+    setTextContext(&FreeSerifBoldItalic9pt7b, GREEN);
+    tft.print("*C");
 
     exhaustTempDisplayed = exhaustTmp;
 }
@@ -306,7 +361,7 @@ void Display::drawExhaustTemp(CanBusReceiver &data)
 void Display::drawCoolantTemp(CanBusReceiver &data)
 {
     bool isOutdated = data.getHeaterTemp().isOutdated;
-    bool isNineBelowFreezing = data.getHeaterTemp().coolant < -9;
+    double coolantValue = data.getHeaterTemp().coolant;
     double coolantTmp = data.getCoolantTmp();
 
     if (coolantTmp == coolantTempDisplayed && !initalPageRender)
@@ -314,8 +369,8 @@ void Display::drawCoolantTemp(CanBusReceiver &data)
         return;
     }
 
-    int new_temp = map(coolantTmp, -10, 100, 0, 150);
-    int last_temp = map(coolantTempDisplayed, -10, 100, 0, 150);
+    int new_temp = map(coolantTmp >= -10 ? coolantTmp : -10, -10, 100, 0, 150);
+    int last_temp = map(coolantTempDisplayed >= -10 ? coolantTempDisplayed : -10, -10, 100, 0, 150);
     if (coolantTmp < coolantTempDisplayed)
     {
         tft.fillRect(275, 170 - last_temp, 20, last_temp - new_temp, BLACK);
@@ -325,11 +380,45 @@ void Display::drawCoolantTemp(CanBusReceiver &data)
         tft.fillRect(275, 170 - new_temp, 20, new_temp - ((initalPageRender || isOutdated) ? 0 : last_temp), GREEN);
     }
 
-    tft.fillRect(225, 175, 50, 20, BLACK);
+    tft.fillRect(225, 175, 55, 20, BLACK);
 
-    isOutdated ? showmsgXY(245, 200, 1, &FreeBigFont, RED, "--") : printDouble((isNineBelowFreezing ? 235 : 240), 190, 1, &FreeSerifBoldItalic9pt7b, GREEN, coolantTmp);
+    if (isOutdated)
+    {
+        setTextContext(245, 190, 1, &FreeBigFont, RED);
+        tft.print("__");
+    }
+    else
+    {
+        uint16_t xPos = 246;
 
-    showmsgXY(275, 190, 1, &FreeSerifBoldItalic9pt7b, GREEN, "*C");
+        if (coolantValue <= -10)
+        {
+            xPos = 240;
+        }
+        else if (coolantValue > -10 && coolantValue <= -0.1)
+        {
+            xPos = 249;
+        }
+        else if (coolantValue >= 0 && coolantValue < 10)
+        {
+            xPos = 255;
+        }
+        else if (coolantValue >= 10 && coolantValue < 100)
+        {
+            xPos = 246;
+        }
+        else
+        {
+            xPos = 237;
+        }
+
+        Serial.println(coolantTmp);
+        setTextContext(xPos, 190, 1, &FreeSerifBoldItalic9pt7b, GREEN);
+        tft.print(coolantTmp, 1);
+    }
+
+    setTextContext(&FreeSerifBoldItalic9pt7b, GREEN);
+    tft.print("*C");
 
     coolantTempDisplayed = coolantTmp;
 }
@@ -362,43 +451,15 @@ bool Display::updateButtonList()
     return down;
 }
 
-void Display::printInteger(int x, int y, int sz, const GFXfont *f, int color, const int number)
-{
-    tft.setFont(f);
-    tft.setCursor(x, y);
-    tft.setTextColor(color);
-    tft.setTextSize(sz);
-    tft.print(number);
-    tft.setFont(NULL);
-}
-
-void Display::printDouble(int x, int y, int sz, const GFXfont *f, int color, const double number)
-{
-    int intValue = (int)(number * 10); // Multiply by 10 to keep one decimal place
-    int wholePart = intValue / 10;
-    int decimalPart = intValue % 10;
-    tft.setFont(f);
-    tft.setCursor(x, y);
-    tft.setTextColor(color);
-    tft.setTextSize(sz);
-
-    tft.print(wholePart);
-    tft.print('.');
-    tft.print(decimalPart);
-    tft.setFont(NULL);
-}
-
 void Display::drawButtonState(int x, int y, int width, int height, int sz,
                               int text_color, int box_color, char *msg)
 {
     tft.fillRect(x, y, width, height, box_color);
     tft.drawRect(x, y, width, height, WHITE);
-    // tft.setFont(f);
     tft.setCursor(x + 22, y + 12);
     tft.setTextColor(BLACK);
     tft.setTextSize(sz);
     tft.print(msg);
-    tft.setFont(NULL);
 }
 
 void Display::drawButtonList(Adafruit_GFX_Button **pb)
@@ -421,7 +482,6 @@ bool Display::update_button(Adafruit_GFX_Button *b, bool down)
 
 void Display::drawOutputState(int index)
 {
-
     switch (index)
     {
     case 0:
@@ -445,7 +505,7 @@ void Display::drawOutputState(int index)
 
         if (itemFourOn)
         {
-            drawButtonState(200, 50, 70, 40, 2, BLACK, GREEN, on); // plant light
+            drawButtonState(200, 50, 70, 40, 2, BLACK, GREEN, on);
         }
         else
         {
@@ -454,7 +514,7 @@ void Display::drawOutputState(int index)
 
         if (itemThreeOn)
         {
-            drawButtonState(200, 100, 70, 40, 2, BLACK, GREEN, on); // led light
+            drawButtonState(200, 100, 70, 40, 2, BLACK, GREEN, on);
         }
         else
         {
@@ -487,7 +547,7 @@ void Display::drawOutputState(int index)
     case 3:
         if (!itemFourOn)
         {
-            drawButtonState(200, 50, 70, 40, 2, BLACK, GREEN, on); // plant light from timer change
+            drawButtonState(200, 50, 70, 40, 2, BLACK, GREEN, on);
         }
         else
         {
@@ -525,8 +585,6 @@ void Display::drawOutputState(int index)
         }
         break;
     case 7:
-        //! water_pump_state ? draw_button_state(130, 200, 70, 40, 2, BLACK, GREEN, "ON"):tft.fillRect(130, 200, 70, 40, BLACK);
-
         if (itemOneOn)
         {
             drawButtonState(130, 200, 70, 40, 2, BLACK, GREEN, on); // led light from button press
@@ -560,6 +618,24 @@ Adafruit_GFX_Button Display::getGridBtn()
 uint8_t Display::getCurrentPage()
 {
     return currentpage;
+}
+
+void Display::initilizeSD()
+{
+    pinMode(SD_CS, OUTPUT);
+    digitalWrite(SD_CS, HIGH);
+
+    pinMode(53, OUTPUT);
+    digitalWrite(53, HIGH); // Deselect the CAN-BUS SPI device
+
+    if (!SD.begin(SD_CS))
+    {
+        Serial.println("SD failed!");
+    }
+    else
+    {
+        Serial.println("SD initilized!");
+    }
 }
 
 void Display::bmpDraw(const char *filename, int x, int y)
@@ -726,21 +802,6 @@ uint32_t Display::read32(File f)
     return result;
 }
 
-void Display::initilizeSD()
-{
-    pinMode(SD_CS, OUTPUT);
-    digitalWrite(SD_CS, HIGH);
-
-    if (!SD.begin(SD_CS))
-    {
-        Serial.println("SD failed!");
-    }
-    else
-    {
-        Serial.println("SD initilized!");
-    }
-}
-
 void Display::drawPixelDots(uint8_t dotDistance)
 {
     if (itemGridOn)
@@ -766,7 +827,16 @@ void Display::drawHeaterState(CanBusReceiver &data)
     tft.fillRect(81, 201, 238, 19, state == -1 ? BLACK : TEXT_BACKGROUND);
     tft.drawRect(80, 200, 240, 21, WHITE);
 
-    state == -1 ? showmsgXY(85, 214, 0, &FreeMonoBold9pt7b, RED, "CAN-BUS failed.") : showmsgXY(85, 214, 0, &FreeMonoBold9pt7b, YELLOW, stateTitleMap[state]);
+    if (state == -1)
+    {
+        setTextContext(85, 214, 0, &FreeMonoBold9pt7b, RED);
+        tft.print("CAN-BUS failed.");
+    }
+    else
+    {
+        setTextContext(85, 214, 0, &FreeMonoBold9pt7b, YELLOW);
+        tft.print(stateTitleMap[state]);
+    }
     heaterStateDisplayed = state;
 }
 
@@ -781,32 +851,79 @@ void Display::drawHeaterMode(CanBusReceiver &data)
     tft.fillRect(81, 221, 238, 18, mode == -1 ? BLACK : TEXT_BACKGROUND);
     tft.drawRect(80, 220, 240, 20, WHITE);
 
-    mode == -1 ? showmsgXY(85, 234, 0, &FreeMonoBold9pt7b, RED, "No message received.") : showmsgXY(85, 234, 0, &FreeMonoBold9pt7b, YELLOW, operationMap[mode]);
+    if (mode == -1)
+    {
+        setTextContext(85, 234, 0, &FreeMonoBold9pt7b, RED);
+        tft.print("No message received.");
+    }
+    else
+    {
+        setTextContext(85, 234, 0, &FreeMonoBold9pt7b, YELLOW);
+        tft.print(operationMap[mode]);
+    }
+
     heaterModeDisplayed = mode;
 }
 
-void Display::drawHeateStats(CanBusReceiver &data)
+void Display::drawHeaterStats(CanBusReceiver &data)
 {
-    // Define the dimensions and properties of the square
-    int squareX = 305;
-    int squareY = 30; // Adjust the starting Y-coordinate to leave space for text
-    int squareWidth = 95;
-    int squareHeight = 190;
+    double frequency = data.getInjectionPump().frequency;
 
-    tft.fillRect(squareX, 10, squareWidth, squareHeight - 8, TEXT_BACKGROUND);
-    tft.drawRect(squareX, 10, squareWidth, squareHeight - 8, WHITE);
-
-    int numRows = 8; 
-    int rowHeight = squareHeight / numRows;
-
-    for (int i = 0; i < numRows; ++i)
+    if (initalPageRender)
     {
-        int rowY = squareY + i * rowHeight;
-        Serial.print("drawing Y at");
-        Serial.println(rowY);
-        tft.drawFastHLine(squareX, rowY, squareWidth, WHITE);
-        char pumpString[20];                     
-        sprintf(pumpString, "Pump %dHz", i + 1); 
-        showmsgXY(squareX + 2, rowY - 7, 1, &FreeMonoBold9pt7b, YELLOW, pumpString);
+        // tft.fillRect(rowXCoordinate, 10, statWindowWidth, statWindowHeight - 8, TEXT_BACKGROUND);
+        // tft.drawRect(rowXCoordinate, 10, statWindowWidth, statWindowHeight - 8, WHITE);
+
+        int rowHeight = 20;
+
+        for (int i = 0; i < 6; ++i)
+        {
+            int rowY = statWindowYCoordinate + i * rowHeight;
+            tft.drawFastHLine(rowXCoordinate, rowY, statWindowWidth, WHITE);
+            rowYCoordinates[i] = rowY - 5;
+        }
     }
+
+    if (frequency != frequencyDisplayed || initalPageRender)
+    {
+        bool isDataValid = data.getInjectionPump().frequency != -1.0;
+        tft.fillRect(rowXCoordinate, 10, statWindowWidth, 21, TEXT_BACKGROUND);
+        tft.drawRect(rowXCoordinate, 10, statWindowWidth, 21, CYAN);
+
+        if (isDataValid)
+        {
+            setTextContext(rowXCoordinate + 5, rowYCoordinates[0], 1, &FreeMonoBold9pt7b, GREEN);
+            tft.print(frequency);
+        }
+        else
+        {
+            setTextContext(rowXCoordinate + 5, rowYCoordinates[0], 1, &FreeBigFont, RED);
+            tft.print("__");
+            setTextContext(&FreeMonoBold9pt7b, GREEN);
+        }
+
+        tft.print("Hz");
+
+        frequencyDisplayed = frequency;
+    }
+}
+
+void Display::setTextContext(int x, int y, int sz, const GFXfont *f, int color)
+{
+    tft.setFont(f);
+    tft.setCursor(x, y);
+    tft.setTextColor(color);
+    tft.setTextSize(sz);
+}
+
+void Display::setTextContext(int x, int y, int color)
+{
+    tft.setCursor(x, y);
+    tft.setTextColor(color);
+}
+
+void Display::setTextContext(const GFXfont *f, int color)
+{
+    tft.setFont(f);
+    tft.setTextColor(color);
 }

@@ -8,6 +8,7 @@
 #include <FreeDefaultFonts.h>
 #include <Fonts/FreeMonoBold9pt7b.h>
 #include <Fonts/FreeSerifBoldItalic9pt7b.h>
+#include <Fonts/FreeMono9pt7b.h>
 
 
 
@@ -52,17 +53,25 @@ private:
       buttonNext,
       buttonBack;
 
-  const int XP = 6, XM = A2, YP = A1, YM = 7;
-  const int TS_LEFT = 973, TS_RT = 187, TS_TOP = 247, TS_BOT = 803; // changed to landscape
+  const int XP=9,XM=A3,YP=A2,YM=8;
+  const int TS_LEFT=927,TS_RT=63,TS_TOP=908,TS_BOT=125;
+
+  // stats window rows
+  uint16_t rowXCoordinate = 305;
+  uint8_t rowYCoordinates[6];
+  uint8_t statWindowYCoordinate = 30;
+  uint8_t statWindowWidth = 95;
+  uint8_t statWindowHeight = 129;
 
   uint8_t newPercent, lastPercent, currentpage, prevPage = 0;
   uint8_t dotDistance = 10;
+  uint8_t exhaustTempDisplayed = 0;
   int8_t heaterStateDisplayed = 0;
   int8_t heaterModeDisplayed = 0;
   int8_t fuelLevelDisplayed = 0;
   double coolantTempDisplayed = 0.0;
-  double exhaustTempDisplayed = 0.0;
   double voltageDisplayed = 9.0;
+  double frequencyDisplayed = 0.0;
 
   int pixel_x, pixel_y;
   bool itemOneOn = false;
@@ -120,9 +129,10 @@ public:
   void page_0(void);
   void page_1(CanBusReceiver &data);
   void page_2(void);
-  void showmsgXY(int x, int y, int sz, const GFXfont *f, int color, const char *msg);
-  void printInteger(int x, int y, int sz, const GFXfont *f, int color, const int number);
-  void printDouble(int x, int y, int sz, const GFXfont *f, int color, const double number);
+  void setTextContext(int x, int y, int sz, const GFXfont *f, int color);
+  void setTextContext(int x, int y, int color);
+  void setTextContext(const GFXfont *f, int color);
+  void printDouble(const double number);
   bool updateButtonList();
   void drawOutputState(int index);
   Adafruit_GFX_Button getNextBtn();
@@ -140,7 +150,7 @@ public:
   void drawPixelDots(uint8_t dotDistance);
   void drawHeaterState(CanBusReceiver &data);
   void drawHeaterMode(CanBusReceiver &data);
-  void drawHeateStats(CanBusReceiver &data);
+  void drawHeaterStats(CanBusReceiver &data);
 };
 
 #endif

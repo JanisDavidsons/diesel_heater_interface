@@ -26,8 +26,8 @@ private:
   {
     uint32_t can_id;
     uint8_t can_dlc;
-    uint8_t data[4];
-    double value = 0.0;
+    uint8_t data[3];
+    uint8_t value = 0;
     bool isIncreasing = false;
     bool isDecreasing = false;
     uint8_t lastUpdated = 0;
@@ -39,7 +39,7 @@ private:
     uint32_t can_id;
     uint8_t can_dlc;
     uint8_t data[2];
-    double voltage = 0.0;
+    double voltage = 9.0;
     bool changed = true;
     uint8_t lastUpdated = 0;
     bool isOutdated = true;
@@ -62,8 +62,8 @@ private:
     uint32_t can_id;
     uint8_t can_dlc;
     uint8_t data[4];
-    double coolant = -10.0;
-    double prevCoolant = -10.0;
+    double coolant = -20.0;
+    double prevCoolant = -20.0;
     double surface = -10.0;
     double prevSurface = -10.0;
     uint8_t lastUpdated = 0;
@@ -75,8 +75,8 @@ private:
     uint32_t can_id;
     uint8_t can_dlc;
     uint8_t data[2];
-    double frequency = 0.0;
-    double prevFrequency = 0.0;
+    double frequency = -1.0;
+    double prevFrequency = -1.0;
     uint8_t lastUpdated = 0;
     bool isOutdated = true;
   } injectionPump;
@@ -105,6 +105,7 @@ public:
   frameFlameSensor getExhaustTemp();
   frameHeaterState getHeateState();
   frameVoltageSensor getVoltage();
+  frameInjectionPump getInjectionPump();
 
   template <typename T>
   void copyCanMsgToStruct(const struct can_frame &canMsg, T &frame);

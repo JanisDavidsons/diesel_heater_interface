@@ -13,8 +13,7 @@
 
 class MCUFRIEND_kbv tft;
 
-const int XP = 6, XM = A2, YP = A1, YM = 7;
-const int TS_LEFT = 973, TS_RT = 187, TS_TOP = 247, TS_BOT = 803;
+const int XP=9,XM=A3,YP=A2,YM=8;
 
 MCP2515 mcp2515(53);
 CanBusReceiver canbus(mcp2515);
@@ -39,8 +38,6 @@ void setup()
     mcp2515.setBitrate(CAN_125KBPS);
     mcp2515.setNormalMode();
     display.initilize();
-    pinMode(SD_CS, OUTPUT);
-    digitalWrite(SD_CS, HIGH);
 
     // delay(2000);
     // display.page_0();
@@ -71,6 +68,7 @@ void loop()
         display.drawExhaustTemp(canbus);
         display.drawHeaterState(canbus);
         display.drawHeaterMode(canbus);
+        display.drawHeaterStats(canbus);
 
         if (display.getBackBtn().justPressed())
         {
