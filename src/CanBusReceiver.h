@@ -51,9 +51,7 @@ private:
     uint8_t can_dlc;
     uint8_t data[2];
     int8_t state = -1;
-    int8_t prevState = -1;
     int8_t mode = -1;
-    int8_t prevMode = -1;
     uint8_t lastUpdated = 0;
   } heaterState;
 
@@ -63,9 +61,7 @@ private:
     uint8_t can_dlc;
     uint8_t data[4];
     double coolant = -20.0;
-    double prevCoolant = -20.0;
     double surface = -10.0;
-    double prevSurface = -10.0;
     uint8_t lastUpdated = 0;
     bool isOutdated = true;
   } heaterTemperature;
@@ -76,10 +72,29 @@ private:
     uint8_t can_dlc;
     uint8_t data[2];
     double frequency = -1.0;
-    double prevFrequency = -1.0;
     uint8_t lastUpdated = 0;
     bool isOutdated = true;
   } injectionPump;
+
+  struct frameCombustionFan
+  {
+    uint32_t can_id;
+    uint8_t can_dlc;
+    uint8_t data[1];
+    uint8_t speed = 255;
+    uint8_t lastUpdated = 0;
+    bool isOutdated = true;
+  } combustionFan;
+
+  struct frameGlowPlug
+  {
+    uint32_t can_id;
+    uint8_t can_dlc;
+    uint8_t data[1];
+    uint8_t isOn = 255;
+    uint8_t lastUpdated = 0;
+    bool isOutdated = true;
+  } gowPlug;
 
   void setTrend(frameFlameSensor &sensor);
 
@@ -97,8 +112,6 @@ public:
   bool isExhaustTempDecreasing();
   Trend getTExhaustTrend();
   double getCoolantTmp();
-  double getPrevCoolantTmp();
-  double getPrevSurfaceTmp();
   double getSurfaceTmp();
 
   frameTemperature getHeaterTemp();
@@ -106,6 +119,8 @@ public:
   frameHeaterState getHeateState();
   frameVoltageSensor getVoltage();
   frameInjectionPump getInjectionPump();
+  frameCombustionFan getCombustionFan();
+  frameGlowPlug getGlowPlug();
 
   template <typename T>
   void copyCanMsgToStruct(const struct can_frame &canMsg, T &frame);
@@ -115,6 +130,8 @@ public:
   void processFrameHeaterState(frameHeaterState &stateData);
   void processFrameHeaterTemperature(frameTemperature &temperatureData);
   void processFrameInjectionPump(frameInjectionPump &injectionPumpData);
+  void processFrameCombustionFan(frameCombustionFan &combustionFanData);
+  void processFrameGlowPlug(frameGlowPlug &glowPlugData);
   void tick();
 };
 

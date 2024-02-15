@@ -49,9 +49,6 @@ void CanBusReceiver::processFrameFlameSensor(frameFlameSensor &flameData)
 
 void CanBusReceiver::processFrameHeaterState(frameHeaterState &stateData)
 {
-  stateData.prevState = stateData.state;
-  stateData.prevMode = stateData.mode;
-
   stateData.state = stateData.data[0];
   stateData.mode = stateData.data[1];
   stateData.lastUpdated = seconds;
@@ -59,9 +56,6 @@ void CanBusReceiver::processFrameHeaterState(frameHeaterState &stateData)
 
 void CanBusReceiver::processFrameHeaterTemperature(frameTemperature &tempData)
 {
-  tempData.prevCoolant = tempData.coolant;
-  tempData.prevSurface = tempData.surface;
-
   int16_t reconstructedCoolantTmp =
       (tempData.data[0]) |
       (tempData.data[1] << 8);
@@ -79,9 +73,6 @@ void CanBusReceiver::processFrameHeaterTemperature(frameTemperature &tempData)
 
 void CanBusReceiver::processFrameInjectionPump(frameInjectionPump &injectionPumpData)
 {
-
-  injectionPumpData.prevFrequency = injectionPumpData.frequency;
-
   int16_t reconstructedData =
       (injectionPumpData.data[0]) |
       (injectionPumpData.data[1] << 8);
@@ -89,6 +80,20 @@ void CanBusReceiver::processFrameInjectionPump(frameInjectionPump &injectionPump
   injectionPumpData.frequency = static_cast<double>(reconstructedData) / 10;
   injectionPumpData.lastUpdated = seconds;
   injectionPumpData.isOutdated = false;
+}
+
+void CanBusReceiver::processFrameCombustionFan(frameCombustionFan &combustionFanData)
+{
+  combustionFanData.speed = combustionFan.data[0];
+  combustionFanData.lastUpdated = seconds;
+  combustionFanData.isOutdated = false;
+}
+
+void CanBusReceiver::processFrameGlowPlug(frameGlowPlug &glowPlugData)
+{
+  glowPlugData.isOn = glowPlugData.data[0];
+  glowPlugData.lastUpdated = seconds;
+  glowPlugData.isOutdated = false;
 }
 
 void CanBusReceiver::checkMessage()
@@ -113,8 +118,8 @@ void CanBusReceiver::checkMessage()
       {
         copyCanMsgToStruct(canMsg, voltageSensor);
         processFrameVoltageSensor(voltageSensor);
-        Serial.print("Setting Voltage ");
-        Serial.println(seconds);
+        // Serial.print("Setting Voltage ");
+        // Serial.println(seconds);
       }
       else
       {
@@ -155,6 +160,30 @@ void CanBusReceiver::checkMessage()
       else
       {
         Serial.println("Error: Size mismatch in received 0x104 message");
+      }
+    }
+    else if (canMsg.can_id == 0x105)
+    {
+      if (canMsg.can_dlc == sizeof(combustionFan.data))
+      {
+        copyCanMsgToStruct(canMsg, combustionFan);
+        processFrameCombustionFan(combustionFan);
+      }
+      else
+      {
+        Serial.println("Error: Size mismatch in received 0x105 message");
+      }
+    }
+    else if (canMsg.can_id == 0x106)
+    {
+      if (canMsg.can_dlc == sizeof(gowPlug.data))
+      {
+        copyCanMsgToStruct(canMsg, gowPlug);
+        processFrameGlowPlug(gowPlug);
+      }
+      else
+      {
+        Serial.println("Error: Size mismatch in received 0x106 message");
       }
     }
   }
@@ -221,16 +250,6 @@ double CanBusReceiver::getSurfaceTmp()
   return heaterTemperature.surface;
 }
 
-double CanBusReceiver::getPrevCoolantTmp()
-{
-  return heaterTemperature.prevCoolant;
-}
-
-double CanBusReceiver::getPrevSurfaceTmp()
-{
-  return heaterTemperature.prevSurface;
-}
-
 void CanBusReceiver::tick()
 {
   seconds++;
@@ -254,9 +273,8 @@ void CanBusReceiver::tick()
     heaterState.mode = -1;
   }
 
-  if (seconds - voltageSensor.lastUpdated > 10)
+  if (seconds - voltageSensor.lastUpdated > 5)
   {
-    Serial.println("Setting voltage outdated");
     voltageSensor.voltage = 9.0;
     voltageSensor.isOutdated = true;
   }
@@ -267,6 +285,17 @@ void CanBusReceiver::tick()
     injectionPump.isOutdated = true;
   }
   
+  if (seconds - combustionFan.lastUpdated >5)
+  {
+    combustionFan.speed = 255;
+    combustionFan.isOutdated = true;
+  }
+
+  if (seconds - gowPlug.lastUpdated >5)
+  {
+    gowPlug.isOn = 255;
+    gowPlug.isOutdated = true;
+  }
 }
 
 CanBusReceiver::frameTemperature CanBusReceiver::getHeaterTemp()
@@ -292,4 +321,14 @@ CanBusReceiver::frameVoltageSensor CanBusReceiver::getVoltage()
 CanBusReceiver::frameInjectionPump CanBusReceiver::getInjectionPump()
 {
   return injectionPump;
+}
+
+CanBusReceiver::frameCombustionFan CanBusReceiver::getCombustionFan()
+{
+  return combustionFan;
+}
+
+CanBusReceiver::frameGlowPlug CanBusReceiver::getGlowPlug()
+{
+  return gowPlug;
 }

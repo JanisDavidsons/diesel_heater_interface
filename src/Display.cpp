@@ -261,11 +261,6 @@ void Display::drawVoltage(CanBusReceiver &data)
     bool isOutdated = data.getVoltage().isOutdated;
     bool isSingleDigit = voltage < 10.0;
 
-    if (voltage == 0)
-    {
-        return;
-    }
-
     if (voltage == voltageDisplayed && !initalPageRender)
     {
         return;
@@ -412,7 +407,6 @@ void Display::drawCoolantTemp(CanBusReceiver &data)
             xPos = 237;
         }
 
-        Serial.println(coolantTmp);
         setTextContext(xPos, 190, 1, &FreeSerifBoldItalic9pt7b, GREEN);
         tft.print(coolantTmp, 1);
     }
@@ -868,6 +862,8 @@ void Display::drawHeaterMode(CanBusReceiver &data)
 void Display::drawHeaterStats(CanBusReceiver &data)
 {
     double frequency = data.getInjectionPump().frequency;
+    uint8_t fanSpeed = data.getCombustionFan().speed;
+    uint8_t glowPlug = data.getGlowPlug().isOn;
 
     if (initalPageRender)
     {
@@ -905,6 +901,53 @@ void Display::drawHeaterStats(CanBusReceiver &data)
         tft.print("Hz");
 
         frequencyDisplayed = frequency;
+    }
+
+    if (fanSpeed != fansSpeedDisplayed || initalPageRender)
+    {
+        bool isDataValid = !data.getCombustionFan().isOutdated;
+        tft.fillRect(rowXCoordinate, 30, statWindowWidth, 21, TEXT_BACKGROUND);
+        tft.drawRect(rowXCoordinate, 30, statWindowWidth, 21, CYAN);
+
+        if (isDataValid)
+        {
+            setTextContext(rowXCoordinate + 5, rowYCoordinates[1], 1, &FreeMonoBold9pt7b, GREEN);
+            tft.print(fanSpeed);
+        }
+        else
+        {
+            setTextContext(rowXCoordinate + 5, rowYCoordinates[1], 1, &FreeBigFont, RED);
+            tft.print("__");
+            setTextContext(&FreeMonoBold9pt7b, GREEN);
+        }
+
+        tft.print("%");
+
+        fansSpeedDisplayed = fanSpeed;
+    }
+    tft.setFont(NULL);
+
+    if (glowPlug != glowPlugdDisplayed || initalPageRender)
+    {
+        bool isDataValid = !data.getGlowPlug().isOutdated;
+        tft.fillRect(rowXCoordinate, 50, statWindowWidth, 21, TEXT_BACKGROUND);
+        tft.drawRect(rowXCoordinate, 50, statWindowWidth, 21, CYAN);
+
+        setTextContext(rowXCoordinate, rowYCoordinates[2], 1, &FreeMonoBold9pt7b, GREEN);
+        tft.print("Glow ");
+
+        if (isDataValid)
+        {
+            tft.print(glowPlug == 1 ? "ON" : "OFF");
+        }
+        else
+        {
+            setTextContext(&FreeBigFont, RED);
+            tft.print("__");
+            setTextContext(&FreeMonoBold9pt7b, GREEN);
+        }
+
+        glowPlugdDisplayed = glowPlug;
     }
 }
 

@@ -69,6 +69,8 @@ private:
   int8_t heaterStateDisplayed = 0;
   int8_t heaterModeDisplayed = 0;
   int8_t fuelLevelDisplayed = 0;
+  uint8_t fansSpeedDisplayed = 0;
+  uint8_t glowPlugdDisplayed = 0;
   double coolantTempDisplayed = 0.0;
   double voltageDisplayed = 9.0;
   double frequencyDisplayed = 0.0;
