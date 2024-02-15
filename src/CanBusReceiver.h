@@ -91,7 +91,7 @@ private:
     uint32_t can_id;
     uint8_t can_dlc;
     uint8_t data[1];
-    uint8_t isOn = 255;
+    uint8_t state = 255;
     uint8_t lastUpdated = 0;
     bool isOutdated = true;
   } gowPlug;

@@ -29,6 +29,7 @@
 #define SILVER 0xC618
 #define YELLOW 0xFFE0
 #define TEXT_BACKGROUND 0x4A69
+#define BLUE 0x2b00ff
 
 #define SHOW_COORDINATES_ON false // change this to view touch point coordinates in serial monitor
 
@@ -38,7 +39,7 @@ private:
   MCUFRIEND_kbv &tft;
   TouchScreen &ts;
   Adafruit_GFX_Button *page_0_btn[3];
-  Adafruit_GFX_Button *page_1_btn[3];
+  Adafruit_GFX_Button *page_1_btn[4];
   Adafruit_GFX_Button *page_2_btn[7];
 
   Adafruit_GFX_Button
@@ -49,9 +50,10 @@ private:
       buttonGrid,
       buttonSix,
       buttonSeven,
-      buttonEight,
+      buttonHeaterToggle,
       buttonNext,
-      buttonBack;
+      buttonBack,
+      buttonStart;
 
   const int XP=9,XM=A3,YP=A2,YM=8;
   const int TS_LEFT=927,TS_RT=63,TS_TOP=908,TS_BOT=125;
@@ -83,8 +85,10 @@ private:
   bool itemFiveOn = true;
   bool initalPageRender = false;
 
-  char next[6] = "NEXT";
-  char back[6] = "BACK";
+  char next[5] = "NEXT";
+  char back[5] = "BACK";
+  char start[6] = "START";
+  char stop[5] = "STOP";
   char text_1[7] = "text 1";
   char text_2[7] = "text 2";
   char on[4] = "ON";
@@ -140,6 +144,7 @@ public:
   Adafruit_GFX_Button getNextBtn();
   Adafruit_GFX_Button getBackBtn();
   Adafruit_GFX_Button getGridBtn();
+  Adafruit_GFX_Button getStartBtn();
   uint8_t getCurrentPage();
   void bmpDraw(const char *filename, int x, int y);
   uint16_t read16(File f);

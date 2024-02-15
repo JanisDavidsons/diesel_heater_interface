@@ -91,7 +91,7 @@ void CanBusReceiver::processFrameCombustionFan(frameCombustionFan &combustionFan
 
 void CanBusReceiver::processFrameGlowPlug(frameGlowPlug &glowPlugData)
 {
-  glowPlugData.isOn = glowPlugData.data[0];
+  glowPlugData.state = glowPlugData.data[0];
   glowPlugData.lastUpdated = seconds;
   glowPlugData.isOutdated = false;
 }
@@ -293,7 +293,7 @@ void CanBusReceiver::tick()
 
   if (seconds - gowPlug.lastUpdated >5)
   {
-    gowPlug.isOn = 255;
+    gowPlug.state = 255;
     gowPlug.isOutdated = true;
   }
 }

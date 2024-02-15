@@ -8,15 +8,18 @@
 #include <arduino-timer.h>
 
 #include "CanBusReceiver.h"
+#include "CanBusSender.h"
 #include "RoomTemperature.h"
 #include "Display.h"
 
 class MCUFRIEND_kbv tft;
 
 const int XP=9,XM=A3,YP=A2,YM=8;
-
+const uint8_t heaterOnCommand = 1;
+ 
 MCP2515 mcp2515(53);
-CanBusReceiver canbus(mcp2515);
+CanBusReceiver canbusReceiver(mcp2515);
+CanBusSender canBusSender(mcp2515);
 TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 Display display(tft, ts);
 
@@ -38,10 +41,11 @@ void setup()
     mcp2515.setBitrate(CAN_125KBPS);
     mcp2515.setNormalMode();
     display.initilize();
+    canBusSender.initialize();
 
     // delay(2000);
     // display.page_0();
-    display.page_1(canbus);
+    display.page_1(canbusReceiver);
 
     runTimeCallback();
 }
@@ -49,7 +53,7 @@ void setup()
 void loop()
 {
     timer.tick();
-    canbus.checkMessage();
+    canbusReceiver.checkMessage();
     display.updateButtonList();
     uint8_t currentPage = display.getCurrentPage();
 
@@ -57,18 +61,18 @@ void loop()
     {
         if (display.getNextBtn().justPressed())
         {
-            display.page_1(canbus);
+            display.page_1(canbusReceiver);
         }
     }
     else if (currentPage == 1)
     {
-        display.drawFuelLevel(canbus);
-        display.drawVoltage(canbus);
-        display.drawCoolantTemp(canbus);
-        display.drawExhaustTemp(canbus);
-        display.drawHeaterState(canbus);
-        display.drawHeaterMode(canbus);
-        display.drawHeaterStats(canbus);
+        display.drawFuelLevel(canbusReceiver);
+        display.drawVoltage(canbusReceiver);
+        display.drawCoolantTemp(canbusReceiver);
+        display.drawExhaustTemp(canbusReceiver);
+        display.drawHeaterState(canbusReceiver);
+        display.drawHeaterMode(canbusReceiver);
+        display.drawHeaterStats(canbusReceiver);
 
         if (display.getBackBtn().justPressed())
         {
@@ -78,12 +82,18 @@ void loop()
         {
             display.page_2();
         }
+        else if (display.getStartBtn().justPressed())
+        {
+            Serial.println("getStartBtn().justPressed()");
+            canBusSender.sendHeaterCommand(heaterOnCommand);
+        }
+        
     }
     else if (currentPage == 2)
     {
         if (display.getBackBtn().justPressed())
         {
-            display.page_1(canbus);
+            display.page_1(canbusReceiver);
         }
         else if (display.getGridBtn().justPressed())
         {
@@ -107,7 +117,7 @@ void runTimeCallback()
 
             // Serial.print("Room temperature: ");
             // Serial.println(temperature.readTemperature());
-            canbus.tick();
+            canbusReceiver.tick();
             return true;
         });
 

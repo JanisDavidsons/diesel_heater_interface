@@ -10,7 +10,8 @@ Display::Display(MCUFRIEND_kbv &tft, TouchScreen &ts)
 
     page_1_btn[0] = &buttonNext;
     page_1_btn[1] = &buttonBack;
-    page_1_btn[2] = NULL;
+    page_1_btn[2] = &buttonStart;
+    page_1_btn[3] = NULL;
 
     page_2_btn[0] = &buttonGrid;
     page_2_btn[1] = &buttonBack;
@@ -178,6 +179,7 @@ void Display::page_1(CanBusReceiver &data)
 
     buttonBack.initButton(&tft, 40, 220, 70, 40, WHITE, CYAN, BLACK, back, 2);
     buttonNext.initButton(&tft, 362, 220, 70, 40, WHITE, CYAN, BLACK, next, 2);
+    buttonStart.initButton(&tft, 362, 170, 70, 40, RED, YELLOW, BLACK, start, 2);
 
     drawButtonList(page_1_btn);
 
@@ -598,6 +600,10 @@ Adafruit_GFX_Button Display::getNextBtn()
 {
     return buttonNext;
 }
+Adafruit_GFX_Button Display::getStartBtn()
+{
+    return buttonStart;
+}
 
 Adafruit_GFX_Button Display::getBackBtn()
 {
@@ -863,7 +869,7 @@ void Display::drawHeaterStats(CanBusReceiver &data)
 {
     double frequency = data.getInjectionPump().frequency;
     uint8_t fanSpeed = data.getCombustionFan().speed;
-    uint8_t glowPlug = data.getGlowPlug().isOn;
+    uint8_t glowPlug = data.getGlowPlug().state;
 
     if (initalPageRender)
     {
